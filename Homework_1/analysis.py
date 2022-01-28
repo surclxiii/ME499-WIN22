@@ -22,11 +22,26 @@ def greater_than_index(l, n):
             return l.index(i)
     return
 
-def c_initial(data):
-    return data[0]
 
-load_data_from_file('data1.csv')
-print(df)
+def c_initial(df):
+    for i, t in enumerate(df):
+        return t[1]
+
+
+def c_max(df):
+    for i, t in enumerate(df):
+        return max(t[1])
+
+
+def c_final(df):
+    for i, t in enumerate(df):
+        return t[-1]
+
+
+df = load_data_from_file('data1.csv')
 list = [1, 3, 4, 7, 10]
 print(list)
 print(greater_than_index(list, 6))
+print('initial:', c_initial(df))
+print('max:', c_max(df))
+print('final:', c_final(df))
