@@ -1,4 +1,5 @@
 import string
+import sys
 
 
 # https://docs.python.org/3/library/stdtypes.html#str.join
@@ -50,9 +51,22 @@ def score_sentence(my_sentence, scores):
     return score
 
 
+# Work with Ittiwat
 if __name__ == '__main__':
-    print(load_score_dict())
-    print(get_words("zoftig zoftig"))
-    word1 = "zygnema, zygophyllum, zyloprim"
-    dict1 = {"zygnema": 1, "zygophyllum": 2, "zyloprim": -1}
-    print(score_sentence(word1, dict1))
+    # To make CLI use sys
+    try:
+        with open(sys.argv[1], "r") as f:   # Open text file
+            sentence = f.read()
+
+    # Ask for filename input if not given
+    except:
+        with open(input("Input filename:"), "r") as f:
+            sentence = f.read()
+    score = score_sentence(sentence, load_score_dict())
+
+    if score > 0:
+        print("Positive")
+    elif score < 0:
+        print("Negative")
+    else:
+        print("Neutral")
