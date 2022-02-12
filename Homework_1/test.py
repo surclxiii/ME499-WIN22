@@ -1,3 +1,4 @@
+
 import csv
 import math
 
@@ -95,20 +96,3 @@ if __name__ == '__main__':
     sorted_data = sorted(data.items())
     for key, value in sorted_data:
         print(key, value)
-    # print(load_data_from_file(path))
-    # print(analyze_data(path))
-    # list = [1, 3, 4, 7, 10]
-    # print(list)
-    # print(greater_than_index(list, 6))
-    # time, position, c_max, c_initial, c_final = estimates_value('data1.csv')
-    # t_r, t_p, percent_overshoot, T_s = estimate_char('data1.csv')
-    # mass, k, c = get_system_params(percent_overshoot, T_s)
-    # print('c_initial:', c_initial)
-    # print('c_max:', c_max)
-    # print('c_final:', c_final)
-    # print(get_system_params(percent_overshoot, T_s))
-    # print('timr_r:', t_r)
-    # print('t_p:', t_p)
-    # print('T_s:', T_s)
-    # print('percent_overshoot:', percent_overshoot)
-    # print('mass:', mass)

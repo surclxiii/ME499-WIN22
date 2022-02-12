@@ -5,33 +5,46 @@ import math
 # Work with Ittiwat Poonprachasin
 # Problem 1
 def load_data_from_file(path):
-    # Takes a file path as a string, returns two lists
-    file = open(path, 'r')
-    # Read only
+    """
+    Takes a file path as a string, returns two lists
+    :param path: file path
+    :return: list of all time index, list of all the position values as floats
+    """
+    file = open(path, 'r')  # Read only
     reader = csv.reader(file)
     header = next(reader)
     time = []
     position = []
-    for row in reader:
+    for row in reader:  # Add datas from file to the lists
         time.append(float(row[0]))
         position.append(float(row[1]))
     file.close()
     return time, position
 
 
-def greater_than_index(l, n):
-    for i in l:
+def greater_than_index(list, number):
+    """
+    Get the position of the first element in the list which is greater or equal to given number.
+    :param list: A list of number
+    :param number: single number
+    :return: The index of the element
+    """
+    for index in list:
         # Check if the element is greater than or equal to n
-        if i >= n:
+        if index >= number:
             # Return the index
-            return l.index(i)
+            return list.index(index)
     return
 
 
 # Problem 2
 def estimates_value(path):
-    # Take time and position from load data function
-    time, position = load_data_from_file(path)
+    """
+    Get the initial, largest, and final position of the system
+    :param path: The file path
+    :return: values of time, position, initial_pos, max_pos, final_pos
+    """
+    time, position = load_data_from_file(path)    # Take time and position from load data function
     # Determine initial, maximum, final position
     c_initial = position[0]
     c_max = max(position)
@@ -41,6 +54,11 @@ def estimates_value(path):
 
 # Problem 3
 def estimate_char(path):
+    """
+    Compute the characteristic of data from file
+    :param path: file path
+    :return: values of rising time, peak time, percent overshoot, settling time
+    """
     # Take values from estimates_value to estimate characteristic
     time, position, c_initial, c_max, c_final = estimates_value(path)
     # 10% time
@@ -58,20 +76,27 @@ def estimate_char(path):
     t_p = time[p_peak_i]
     # Percentage overshoot
     percent_overshoot = (abs((c_max - c_final) / (c_final - c_initial)) * 100)
-    bounds = 0.02 * (abs(c_initial) + abs(c_final))
-    upper = greater_than_index(position, (c_final + bounds))
-    lower = greater_than_index(position, (c_final - bounds))
-    time_up = time[upper]
-    time_low = time[lower]
+    # 2% time
+    p_diff = p_ten - p_ninety
+    pos_ini_index = greater_than_index(position, (c_initial - p_diff) * 0.02)
+    pos_fin_index = greater_than_index(position, (c_final - p_diff) * 0.02)
+    time_ini_two = time[pos_ini_index]
+    time_final_two = time[pos_fin_index]
     # Settling time
-    T_s = time_up - time_low
+    T_s = abs(time_ini_two - time_final_two)
     return t_r, t_p, percent_overshoot, T_s
 
 
 # PROBLEM 4
-def get_system_params(percent_overshoot, T_s):
+def get_system_params(percent_overshoot, settling_time):
+    """
+    Get the system parameter (damping, mass, constant)
+    :param percent_overshoot: percentage overshoot
+    :param settling_time: settling time
+    :return: values of system damping, system mass, system spring
+    """
     zeta = (-math.log(percent_overshoot / 100)) / math.sqrt((math.pi ** 2) + (math.log(percent_overshoot / 100)) ** 2)
-    w_n = 4 / (zeta * T_s)
+    w_n = 4 / (zeta * settling_time)
     k = w_n ** 2
     c = w_n * 2 * zeta
     m = 1
@@ -80,6 +105,11 @@ def get_system_params(percent_overshoot, T_s):
 
 # Problem 5
 def analyze_data(path):
+    """
+    Take in file name and get the dictionary with following keys, values
+    :param path: file path
+    :return: dictionary of keys, values
+    """
     time, position, c_initial, c_max, c_final = estimates_value(path)
     t_r, t_p, percent_overshoot, T_s = estimate_char(path)
     k, c, m = get_system_params(percent_overshoot, T_s)
@@ -90,25 +120,8 @@ def analyze_data(path):
 
 
 if __name__ == '__main__':
-    path = 'data1.csv'
+    path = 'Homework_1/data1.csv'
     data = analyze_data(path)
     sorted_data = sorted(data.items())
     for key, value in sorted_data:
         print(key, value)
-    # print(load_data_from_file(path))
-    # print(analyze_data(path))
-    # list = [1, 3, 4, 7, 10]
-    # print(list)
-    # print(greater_than_index(list, 6))
-    # time, position, c_max, c_initial, c_final = estimates_value('data1.csv')
-    # t_r, t_p, percent_overshoot, T_s = estimate_char('data1.csv')
-    # mass, k, c = get_system_params(percent_overshoot, T_s)
-    # print('c_initial:', c_initial)
-    # print('c_max:', c_max)
-    # print('c_final:', c_final)
-    # print(get_system_params(percent_overshoot, T_s))
-    # print('timr_r:', t_r)
-    # print('t_p:', t_p)
-    # print('T_s:', T_s)
-    # print('percent_overshoot:', percent_overshoot)
-    # print('mass:', mass)
