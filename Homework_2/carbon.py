@@ -20,8 +20,8 @@ def get_current_day(unix_timestamp=None):
 
     else:  # Get date from the second since epoch
         current_day = datetime.datetime.fromtimestamp(int(unix_timestamp)).strftime('%Y-%m-%d')
-    current_day = str(current_day)  # Convert to string
 
+    current_day = str(current_day)  # Convert to string
     return current_day
 
 
