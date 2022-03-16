@@ -6,24 +6,27 @@ from matplotlib.figure import Figure
 import numpy as np
 import digital_signal as ds
 
+
 class GUI(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
         self.setWindowTitle('GUI')
-    # Textbox
+        # Textbox
         self.start_text = QLineEdit(self)
+        self.start_text.valueChanged.connect(lambda: start_end_change())
         self.end_text = QLineEdit(self)
+        self.end_text.valueChanged.connect(lambda: start_end_change())
         self.load_text = QLineEdit(self)
         self.save_text = QLineEdit(self)
-    # Load GUI
+        # Load GUI
         self.setWindowTitle('Yes')
         self.setGeometry(10, 10, 640, 480)
-    # Slider
-    #     self.low = 0
-    #     self.high = 100
+        # Slider
+        #     self.low = 0
+        #     self.high = 100
         self.sl_low = QSlider(Qt.Horizontal)
         self.sl_high = QSlider(Qt.Horizontal)
-    # Label
+        # Label
         lab_low = QLabel('Low: ', self)
         self.sl_low.valueChanged.connect(lambda: low_slide())
         lab_high = QLabel('High: ', self)
@@ -32,18 +35,18 @@ class GUI(QMainWindow):
         lab_end = QLabel('End: ', self)
         lab_load = QLabel('Load file: ', self)
         lab_save = QLabel('Save file: ', self)
-    # Button
+        # Button
         reset_button = QPushButton('Reset all')
         reset_button.clicked.connect(self.reset_all)
         load_button = QPushButton('Load')
         load_button.clicked.connect(self.load_wav)
         save_button = QPushButton('Save')
         save_button.clicked.connect(self.save_wav)
-    # Display Plot
+        # Display Plot
         self.figure = Figure()
         self.display = FigureCanvas(self.figure)
         self.figure.clear()
-    # Layout
+        # Layout
         widget = QWidget()
         self.setCentralWidget(widget)
         top_layout = QHBoxLayout()
@@ -74,37 +77,53 @@ class GUI(QMainWindow):
             lab_low.setText("Low: " + "%.3f" % value + " Hz")
             lab_low.adjustSize()
             self.low = self.sl_low.value()
+            self.plot()
 
         def high_slide():
             value = self.sl_high.value()
             lab_high.setText("High: " + "%.3f" % value + " Hz")
             lab_high.adjustSize()
             self.high = self.sl_high.value()
+            self.plot()
 
-    def load_wav(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "",
-                                                  "All Files (*);;Python Files (*.py)", options=options)
-        signal = ds.DigitalSignal.from_wav(fileName)
-        length = signal.source_data.shape[0] / signal.sampling_frequency
-        time = np.linspace(0., length, signal.source_data.shape[0])
-        # Set Range of slider
-        self.sl_low.setRange(0, int(signal.freq_high))
-        self.sl_high.setRange(0, int(signal.freq_high))
-        # Set text of Qline
-        self.start_text.setText('0')
-        self.end_text.setText((str(round(time[-1], 2))))
+        def start_end_change():
+            self.plot()
+
+    def plot(self):
+        sl_low_value = self.sl_low.value()
+        sl_high_value = self.sl_high.value()
+        start_value = self.start_text.value()
+        end_value = self.end_text.value()
+
+        self.signal.bandpass(low=sl_low_value, high=sl_high_value)
+        self.signal.subset_signal(start=start_value, end=end_value)
 
         # Plotting
         self.figure.clear()
         ax = self.figure.add_subplot(111)
-        ax.plot(time, signal.source_data[:])
-        ax.set_title(fileName)
+        ax.plot(self.time, self.signal.filtered_data)
+        ax.set_title(self.fileName)
         ax.set_xlabel('Time (s)')
         ax.set_ylabel('Amplitude')
         self.display.draw()
-        self.load_text.setText(fileName)
+        self.load_text.setText(self.fileName)
+
+    def load_wav(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        self.fileName, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "",
+                                                       "All Files (*);;Python Files (*.py)", options=options)
+        self.signal = ds.DigitalSignal.from_wav(self.fileName)
+        self.length = self.signal.source_data.shape[0] / self.signal.sampling_frequency
+        self.time = np.linspace(0., self.length, self.signal.source_data.shape[0])
+        # Set Range of slider
+        self.sl_low.setRange(0, int(self.signal.freq_high))
+        self.sl_high.setRange(0, int(self.signal.freq_high))
+        # Set text of Qline
+        self.start_text.setText('0')
+        self.end_text.setText((str(round(self.time[-1], 2))))
+        # Plot
+        self.plot()
 
     def save_wav(self):
         options = QFileDialog.Options()
@@ -116,8 +135,8 @@ class GUI(QMainWindow):
     def reset_all(self):
         self.sl_low.setValue(0)
         self.sl_high.setValue(0)
-        self.start_text.setText('0')
-        self.end_text.setText('0')
+        self.start_text.setValue(0)
+        self.end_text.setValue(0)
 
 
 if __name__ == '__main__':

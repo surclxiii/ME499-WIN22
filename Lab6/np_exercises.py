@@ -48,7 +48,7 @@ def simulate_dice_rolls(num_rolls, iterations):
 num_rolls times.
     """
     roll = np.random.randint(1, 7, size=(iterations, num_rolls))
-    faces = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] # x-axis
+    faces = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]  # x-axis
     faces_sum = roll.sum(axis=1)
     plt.hist(faces_sum, faces)
     plt.show()
@@ -58,20 +58,39 @@ num_rolls times.
     return faces_sum
 
 
+def is_transformation_matrix(matrix_array):
+    """
+    Check if the transformation matrix is valid
+    :param matrix_array: array of 4x4
+    :return: True/False if transformation matrix is valid
+    """
+    matrix = np.array(matrix_array[0:3, 0:3])  # Creat a matrix
+    bottom = np.array([0., 0., 0., 1.])  # Set the bottom row
+    matrix_iden = np.identity(3)  # Create identity matrix
+    matrix_trans = np.transpose(matrix)  # Transposing
+    if np.all(np.matmul(matrix_trans, matrix) - matrix_iden < 1e-5) and np.all(matrix_array[3] == bottom):
+        return True
+    else:
+        return False
+
+
 def nearest_neighbors(a, b, c):
-    if np.sum(np.square(a-b)) < c:
-        return a
-    
-    nn_func = np.vectorize(nearest_neighbors)
-    result = nn_func(a, b, c)
-    result = result[~np.isnan(result).any(axis=1)]
-    result = sorted(result, key=lambda result:result[0])
-    result = sorted(result, key=lambda result:result[1])
-    result = sorted(result, key=lambda result:result[2])
+    """
+    Sort the output by distance from the corresponding point
+    :param a: N x D Numpy array
+    :param b: 1D array of length D point
+    :param c: distance
+    :return: Sorted output
+    """
+    def euclid_func(r):
+        return np.linalg.norm(r - b)
+    distance = np.apply_along_axis(euclid_func, 1, a)
+    near_1 = a[np.where(distance < c)]
+    near_2 = np.apply_along_axis(euclid_func, 1, near_1)
+    sorted_out = near_1[np.argsort(near_2)]
+    return sorted_out
 
 
+# Work with Ittiwat, Maila, Breden
 if __name__ == '__main__':
-    simulate_dice_rolls(1, 100)
-    array = np.array([[1, 1, 1], [2, 3, 5], [0, 1, 1], [1.5, 1, 1], [10, 9, 9]])
-    target_pt = np.array([0, 1, 1])
-    nearest_neighbors(array, target_pt, 3)
+    simulate_dice_rolls(5, 2000)
