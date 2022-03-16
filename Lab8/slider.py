@@ -12,6 +12,17 @@ class SliderDisplay(QWidget):
         self.setLayout(layout)
 
         # Your code goes in here
+        label = QLabel(name, self)  # Create label with name
+        slider = QSlider(Qt.Horizontal)  # Creat slider
+        slider.setRange(low * ticks, high * ticks)  # Set range
+        layout.addWidget(slider)  # Show slider
+        slider.valueChanged.connect(lambda: sliderchange())
+
+        def sliderchange():
+            slider_val = slider.value()
+            scaled = slider_val / ticks
+            label.setText(name + ":" + "%.3f" % scaled + " " + units)
+            label.adjustSize()
 
     def value(self):
         """Return the current value of the slider"""
@@ -21,9 +32,8 @@ class SliderDisplay(QWidget):
 if __name__ == '__main__':
     app = QApplication([])
 
-    slider = SliderDisplay('foo', 0, 1)
+    slider = SliderDisplay('Magnitude', 0, 10, units='dB')
 
     slider.show()
 
     app.exec_()
-
