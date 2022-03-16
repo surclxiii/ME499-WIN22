@@ -57,9 +57,10 @@ class Grapher(QMainWindow):
         self.setCentralWidget(widget)
 
         top_level_layout = QHBoxLayout()
-        widget.setLayout(top_level_layout)
         left_side_layout = QVBoxLayout()
-
+        widget.setLayout(top_level_layout)
+        top_level_layout.addLayout(left_side_layout)
+        top_level_layout.addWidget(self.display)
         left_side_layout.addWidget(graph_button)
         left_side_layout.addStretch()
         left_side_layout.addWidget(quit_button)
@@ -70,8 +71,7 @@ class Grapher(QMainWindow):
         left_side_layout.addWidget(sl_fre)
         left_side_layout.addWidget(lab_pha)
         left_side_layout.addWidget(sl_pha)
-        top_level_layout.addLayout(left_side_layout)
-        top_level_layout.addWidget(self.display)
+
 
         def amp_slide():
             value = sl_amp.value()
