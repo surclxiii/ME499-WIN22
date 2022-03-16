@@ -72,4 +72,5 @@ class DigitalSignal(object):
         wavfile.write(filename, self.sampling_frequency, np.array(self.subset_signal(start, end)))
 
 if __name__ == '__main__':
-    my_signal = DigitalSignal.from_wav('starwars.wav')
+    buba = DigitalSignal.from_wav('starwars.wav')
+    print(buba.sampling_frequency)

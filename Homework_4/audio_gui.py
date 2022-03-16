@@ -1,12 +1,9 @@
-#!/usr/bin/env python3
-
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, \
     QSlider, QLineEdit, QFileDialog
 from PyQt5.QtCore import Qt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import numpy as np
-from scipy.io import wavfile
 import digital_signal as ds
 
 class GUI(QMainWindow):
@@ -22,35 +19,30 @@ class GUI(QMainWindow):
         self.setWindowTitle('Yes')
         self.setGeometry(10, 10, 640, 480)
     # Slider
-        self.low = 0
-        self.high = 100
-        sl_low = QSlider(Qt.Horizontal)
-        sl_low.setRange(0, 2000)
-        sl_high = QSlider(Qt.Horizontal)
-        sl_high.setRange(0, 2000)
+    #     self.low = 0
+    #     self.high = 100
+        self.sl_low = QSlider(Qt.Horizontal)
+        self.sl_high = QSlider(Qt.Horizontal)
     # Label
         lab_low = QLabel('Low: ', self)
-        sl_low.valueChanged.connect(lambda: low_slide())
+        self.sl_low.valueChanged.connect(lambda: low_slide())
         lab_high = QLabel('High: ', self)
-        sl_high.valueChanged.connect(lambda: high_slide())
+        self.sl_high.valueChanged.connect(lambda: high_slide())
         lab_start = QLabel('Start: ', self)
         lab_end = QLabel('End: ', self)
         lab_load = QLabel('Load file: ', self)
         lab_save = QLabel('Save file: ', self)
     # Button
         reset_button = QPushButton('Reset all')
-        #reset_button.clicked.connect()
+        reset_button.clicked.connect(self.reset_all)
         load_button = QPushButton('Load')
         load_button.clicked.connect(self.load_wav)
         save_button = QPushButton('Save')
         save_button.clicked.connect(self.save_wav)
-
-
     # Display Plot
         self.figure = Figure()
         self.display = FigureCanvas(self.figure)
         self.figure.clear()
-
     # Layout
         widget = QWidget()
         self.setCentralWidget(widget)
@@ -62,9 +54,9 @@ class GUI(QMainWindow):
         top_layout.addWidget(self.display)
         top_layout.addLayout(right_layout)
         left_layout.addWidget(lab_low)
-        left_layout.addWidget(sl_low)
+        left_layout.addWidget(self.sl_low)
         left_layout.addWidget(lab_high)
-        left_layout.addWidget(sl_high)
+        left_layout.addWidget(self.sl_high)
         right_layout.addWidget(lab_start)
         right_layout.addWidget(self.start_text)
         right_layout.addWidget(lab_end)
@@ -78,30 +70,35 @@ class GUI(QMainWindow):
         left_layout.addWidget(save_button)
 
         def low_slide():
-            value = sl_low.value()
+            value = self.sl_low.value()
             lab_low.setText("Low: " + "%.3f" % value + " Hz")
             lab_low.adjustSize()
-            self.low = sl_low.value()
+            self.low = self.sl_low.value()
 
         def high_slide():
-            value = sl_high.value()
+            value = self.sl_high.value()
             lab_high.setText("High: " + "%.3f" % value + " Hz")
             lab_high.adjustSize()
-            self.high = sl_high.value()
+            self.high = self.sl_high.value()
 
     def load_wav(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "",
                                                   "All Files (*);;Python Files (*.py)", options=options)
-        # Plot
-        samp_rate, data = ds.DigitalSignal.from_wav(fileName)  # Not Working
-        # samp_rate, data = wavfile.read(fileName) # Works
+        signal = ds.DigitalSignal.from_wav(fileName)
+        length = signal.source_data.shape[0] / signal.sampling_frequency
+        time = np.linspace(0., length, signal.source_data.shape[0])
+        # Set Range of slider
+        self.sl_low.setRange(0, int(signal.freq_high))
+        self.sl_high.setRange(0, int(signal.freq_high))
+        # Set text of Qline
+        self.start_text.setText('0')
+        self.end_text.setText((str(round(time[-1], 2))))
+        # Plotting
         self.figure.clear()
         ax = self.figure.add_subplot(111)
-        length = data.shape[0] / samp_rate
-        time = np.linspace(0., length, data.shape[0])
-        ax.plot(time, data[:])
+        ax.plot(time, signal.source_data[:])
         ax.set_title(fileName)
         ax.set_xlabel('Time (s)')
         ax.set_ylabel('Amplitude')
@@ -115,6 +112,11 @@ class GUI(QMainWindow):
                                                   "All Files (*);;Text Files (*.txt)", options=options)
         self.save_text.setText(fileName)
 
+    def reset_all(self):
+        self.sl_low.setValue(0)
+        self.sl_high.setValue(0)
+        self.start_text.setValue(0)
+        self.end_text.setValue(0)
 
 
 if __name__ == '__main__':
