@@ -95,6 +95,7 @@ class GUI(QMainWindow):
         # Set text of Qline
         self.start_text.setText('0')
         self.end_text.setText((str(round(time[-1], 2))))
+
         # Plotting
         self.figure.clear()
         ax = self.figure.add_subplot(111)
@@ -115,15 +116,12 @@ class GUI(QMainWindow):
     def reset_all(self):
         self.sl_low.setValue(0)
         self.sl_high.setValue(0)
-        self.start_text.setValue(0)
-        self.end_text.setValue(0)
+        self.start_text.setText('0')
+        self.end_text.setText('0')
 
 
 if __name__ == '__main__':
     app = QApplication([])
-
     gui = GUI()
-
     gui.show()
-
     app.exec_()
