@@ -56,7 +56,7 @@ class DigitalSignal(object):
         for lists in range(len(time)):
             if start <= time[lists] <= end:
                 subset.append(self.filtered_data[lists])
-        self.filtered_data = subset
+        self.filtered_data = np.array(subset, dtype=self.source_data.dtype)
         return self.filtered_data
 
     def save_wav(self, filename, start=0, end=0):
@@ -67,10 +67,7 @@ class DigitalSignal(object):
         :param end: (int)
         :return:
         """
+        filename = str(filename) + ".wav"
         if end == 0:
             end = self.source_data.size / self.sampling_frequency
         wavfile.write(filename, self.sampling_frequency, np.array(self.subset_signal(start, end)))
-
-if __name__ == '__main__':
-    buba = DigitalSignal.from_wav('starwars.wav')
-    print(buba.sampling_frequency)

@@ -13,17 +13,15 @@ class GUI(QMainWindow):
         self.setWindowTitle('GUI')
         # Textbox
         self.start_text = QLineEdit(self)
-        self.start_text.valueChanged.connect(lambda: start_end_change())
+        self.start_text.textChanged.connect(lambda: start_end_change())
         self.end_text = QLineEdit(self)
-        self.end_text.valueChanged.connect(lambda: start_end_change())
+        self.end_text.textChanged.connect(lambda: start_end_change())
         self.load_text = QLineEdit(self)
         self.save_text = QLineEdit(self)
         # Load GUI
-        self.setWindowTitle('Yes')
+        self.setWindowTitle('Digital Signal')
         self.setGeometry(10, 10, 640, 480)
         # Slider
-        #     self.low = 0
-        #     self.high = 100
         self.sl_low = QSlider(Qt.Horizontal)
         self.sl_high = QSlider(Qt.Horizontal)
         # Label
@@ -64,6 +62,7 @@ class GUI(QMainWindow):
         right_layout.addWidget(self.start_text)
         right_layout.addWidget(lab_end)
         right_layout.addWidget(self.end_text)
+        right_layout.addStretch()
         right_layout.addWidget(reset_button)
         left_layout.addWidget(lab_load)
         left_layout.addWidget(self.load_text)
@@ -92,12 +91,17 @@ class GUI(QMainWindow):
     def plot(self):
         sl_low_value = self.sl_low.value()
         sl_high_value = self.sl_high.value()
-        start_value = self.start_text.value()
-        end_value = self.end_text.value()
-
+        try:
+            start_value = int(self.start_text.text())
+        except:
+            start_value = 0
+        try:
+            end_value = int(self.end_text.text())
+        except:
+            end_value = 0
         self.signal.bandpass(low=sl_low_value, high=sl_high_value)
         self.signal.subset_signal(start=start_value, end=end_value)
-
+        self.time = np.linspace(0., self.length, self.signal.filtered_data.shape[0])
         # Plotting
         self.figure.clear()
         ax = self.figure.add_subplot(111)
@@ -112,13 +116,15 @@ class GUI(QMainWindow):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         self.fileName, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "",
-                                                       "All Files (*);;Python Files (*.py)", options=options)
+                                                       "Wave Files (*.wav)", options=options)
         self.signal = ds.DigitalSignal.from_wav(self.fileName)
         self.length = self.signal.source_data.shape[0] / self.signal.sampling_frequency
         self.time = np.linspace(0., self.length, self.signal.source_data.shape[0])
         # Set Range of slider
         self.sl_low.setRange(0, int(self.signal.freq_high))
         self.sl_high.setRange(0, int(self.signal.freq_high))
+        self.sl_low.setSliderPosition(int(0))
+        self.sl_high.setSliderPosition(int(self.signal.freq_high))
         # Set text of Qline
         self.start_text.setText('0')
         self.end_text.setText((str(round(self.time[-1], 2))))
@@ -129,14 +135,23 @@ class GUI(QMainWindow):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getSaveFileName(self, "QFileDialog.getSaveFileName()", "",
-                                                  "All Files (*);;Text Files (*.txt)", options=options)
+                                                  "Wave Files (*.wav)", options=options)
+        try:
+            start_value = int(self.start_text.text())
+        except:
+            start_value = 0
+        try:
+            end_value = int(self.end_text.text())
+        except:
+            end_value = 0
         self.save_text.setText(fileName)
+        self.signal.save_wav(fileName)
 
     def reset_all(self):
         self.sl_low.setValue(0)
         self.sl_high.setValue(0)
-        self.start_text.setValue(0)
-        self.end_text.setValue(0)
+        self.start_text.setText('0')
+        self.end_text.setText('0')
 
 
 if __name__ == '__main__':
