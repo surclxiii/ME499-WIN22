@@ -71,6 +71,5 @@ class DigitalSignal(object):
             end = self.source_data.size / self.sampling_frequency
         wavfile.write(filename, self.sampling_frequency, np.array(self.subset_signal(start, end)))
 
-
 if __name__ == '__main__':
-
+    my_signal = DigitalSignal.from_wav('starwars.wav')
